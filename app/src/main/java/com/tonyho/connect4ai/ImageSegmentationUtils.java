@@ -15,6 +15,7 @@ import androidx.annotation.WorkerThread;
 import androidx.camera.core.ImageProxy;
 
 import org.pytorch.LiteModuleLoader;
+import org.pytorch.MemoryFormat;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
@@ -71,8 +72,10 @@ public class ImageSegmentationUtils {
 
      */
     /////
-    TensorImageUtils.bitmapToFloatBuffer(bitmap, 0, 0, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT,
-            NO_MEAN_RGB, NO_STD_RGB, inputBuffer, 0);
+    c4BitmapToFloatBuffer(bitmap, 0, 0, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT,
+            NO_MEAN_RGB, NO_STD_RGB, inputBuffer, 0, MemoryFormat.CONTIGUOUS);
+
+    /*
     for (int i = 0; i < 3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT; ++i) {
       inputBuffer.put(i, inputBuffer.get(i) * 255.0f);
     }
@@ -84,6 +87,8 @@ public class ImageSegmentationUtils {
       inputBuffer.put(i, inputBuffer.get(i + swap_offset));
       inputBuffer.put(i + swap_offset, swap_val);
     }
+
+    */
 
     return Tensor.fromBlob(inputBuffer, new long[]{3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
   }
@@ -131,5 +136,52 @@ public class ImageSegmentationUtils {
       Log.e("C4 Log", "Error process asset " + assetName + " to file path");
     }
     return null;
+  }
+
+  //rgb is reversed and values stay in 0-255 range
+  public static void c4BitmapToFloatBuffer(
+          final Bitmap bitmap,
+          final int x,
+          final int y,
+          final int width,
+          final int height,
+          final float[] normMeanRGB,
+          final float[] normStdRGB,
+          final FloatBuffer outBuffer,
+          final int outBufferOffset,
+          final MemoryFormat memoryFormat) {
+    //checkOutBufferCapacity(outBuffer, outBufferOffset, width, height);
+    //checkNormMeanArg(normMeanRGB);
+    //checkNormStdArg(normStdRGB);
+    if (memoryFormat != MemoryFormat.CONTIGUOUS && memoryFormat != MemoryFormat.CHANNELS_LAST) {
+      throw new IllegalArgumentException("Unsupported memory format " + memoryFormat);
+    }
+
+    final int pixelsCount = height * width;
+    final int[] pixels = new int[pixelsCount];
+    bitmap.getPixels(pixels, 0, width, x, y, width, height);
+    if (MemoryFormat.CONTIGUOUS == memoryFormat) {
+      final int offset_g = pixelsCount;
+      final int offset_b = 2 * pixelsCount;
+      for (int i = 0; i < pixelsCount; i++) {
+        final int c = pixels[i];
+        float r = ((c >> 16) & 0xff);
+        float g = ((c >> 8) & 0xff);
+        float b = ((c) & 0xff);
+        outBuffer.put(outBufferOffset + offset_b + i, (r - normMeanRGB[0]) / normStdRGB[0]);
+        outBuffer.put(outBufferOffset + offset_g + i, (g - normMeanRGB[1]) / normStdRGB[1]);
+        outBuffer.put(outBufferOffset + i, (b - normMeanRGB[2]) / normStdRGB[2]);
+      }
+    } else {
+      for (int i = 0; i < pixelsCount; i++) {
+        final int c = pixels[i];
+        float r = ((c >> 16) & 0xff);
+        float g = ((c >> 8) & 0xff);
+        float b = ((c) & 0xff);
+        outBuffer.put(outBufferOffset + 3 * i + 2, (r - normMeanRGB[0]) / normStdRGB[0]);
+        outBuffer.put(outBufferOffset + 3 * i + 1, (g - normMeanRGB[1]) / normStdRGB[1]);
+        outBuffer.put(outBufferOffset + 3 * i + 0, (b - normMeanRGB[2]) / normStdRGB[2]);
+      }
+    }
   }
 }
