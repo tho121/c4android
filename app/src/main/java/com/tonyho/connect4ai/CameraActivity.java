@@ -242,26 +242,6 @@ public class CameraActivity extends BaseModuleActivity {
         int diffHeight = (int)newHeight - canvasHeight;
         int halfDiff = diffHeight/2;
 
-
-        /*
-        //if height limited
-        float scale = 1.0f;
-        int x_offset = 0;
-        int y_offset = 0;
-        if(canvasHeight < canvasWidth)
-        {
-            scale = heightScale / cameraHeight * canvasHeight;
-        }
-        else
-        {
-            scale = widthScale / cameraWidth * canvasWidth;
-        }
-
-        widthScale *= scale;
-        heightScale *= scale;
-
-         */
-
         for (int i = 0; i < n; i++) {
 
             if (scoresData[i] < 0.7)
