@@ -7,17 +7,12 @@ import static com.tonyho.connect4ai.ImageSegmentationUtils.loadModule;
 import static java.lang.Float.max;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
-import androidx.camera.core.impl.ImageAnalysisConfig;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -38,7 +33,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
-import android.view.View;
 
 import org.pytorch.IValue;
 import org.pytorch.Module;
@@ -46,9 +40,7 @@ import org.pytorch.Tensor;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 
 class Result {
     int classIndex;
@@ -184,7 +176,7 @@ public class CameraActivity extends BaseModuleActivity {
     private int count = 0;
     public IValue[] runImageDetection(Bitmap bitmap) {
         if (mModule == null) {
-            mModule = loadModule(assetFilePath(getApplicationContext(), "mobile_optimized.ptl"));
+            mModule = loadModule(assetFilePath(getApplicationContext(), "mobile_optimized_new.ptl"));
             mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
         }
 
@@ -192,15 +184,15 @@ public class CameraActivity extends BaseModuleActivity {
         if( count % 2 == 0)
         {
             try {
-                bitmap = BitmapFactory.decodeStream(getBaseContext().getAssets().open("test1.png"));
+                bitmap = BitmapFactory.decodeStream(getBaseContext().getAssets().open("test2.png"));
             } catch (Exception e) {
                 Log.e("C4 Log", "Error during loading test image", e);
             }
         }
 
         //count++;
-
  */
+
 
 
 
