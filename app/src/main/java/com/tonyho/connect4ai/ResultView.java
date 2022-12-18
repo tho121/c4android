@@ -278,7 +278,9 @@ public class ResultView extends View {
                 else if (board[i][j] == (-1*flipper))
                     c = 'X';
 
-                s.board[i][j] = c;
+                //expects top to be 0, but we use bot as 0
+                //convert 5->0, 4->1, etc. 0->5
+                s.board[5-i][j] = c;
             }
         }
 
